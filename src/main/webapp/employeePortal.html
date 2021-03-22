@@ -1,0 +1,221 @@
+
+<html>
+<head>
+<script
+	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.4/angular.js"></script>
+
+<title>Employee Portal</title>
+<script type="text/javascript">
+            var app = angular.module("EmployeePortal", []);
+         
+            //Controller Part
+            app.controller("EmployeeController", function($scope, $http) {
+         
+               
+                $scope.customers = [];
+                $scope.customerForm = {
+                    id : -1,
+                    customerName : "",
+                    email : ""
+                };
+         
+                _refreshEmployeeData();
+                $scope.submitEmployee = function() {
+         
+                    var method = "";
+                    var url = "";
+                    if ($scope.employeeForm.id == -1) {
+                        method = "POST";
+                        url = '/addEmployee';
+                    } else {
+                        method = "PUT";
+                        url = '/addEmployee';
+                    }
+         
+                    $http({
+                        method : method,
+                        url : url,
+                        data : angular.toJson($scope.employeeForm),
+                        headers : {
+                            'Content-Type' : 'application/json'
+                        }
+                    }).then( _success, _error );
+                };
+         
+                $scope.deleteEmployee = function(employee) {
+                    $http({
+                        method : 'DELETE',
+                        url : '/deleteEmployee/' + employee.id
+                    }).then(_success, _error);
+                };
+ 
+                $scope.editEmployee = function(employee) 
+                {
+                  
+                    $scope.employeeForm.customerName = employee.employeeName;
+                    $scope.employeeForm.email = employee.email;
+                    $scope.employeeForm.rating = employee.rating;
+                    $scope.employeeForm.department = employee.department;
+                    $scope.employeeForm.id = employee.id;
+
+                };
+         
+                function _refreshEmployeeData() {
+                    $http({
+                        method : 'GET',
+                        url : 'http://localhost:8080/getAllEmployees'
+                    }).then(function successCallback(response) {
+                        $scope.employees = response.data;
+                    }, function errorCallback(response) {
+                        console.log(response.statusText);
+                    });
+                }
+         
+                function _success(response) {
+                    _refreshEmployeeData();
+                    _clearFormData()
+                }
+         
+                function _error(response) {
+                    console.log(response.statusText);
+                }
+         
+                function _clearFormData() {
+                    $scope.employeeForm.id = -1;
+                    $scope.employeeForm.employeeName = "";
+                    $scope.employeeForm.email = "";
+                    $scope.employeeForm.rating = "";
+                    $scope.employeeForm.department = "";
+                
+                };
+            });
+        </script>
+<style>
+.blue-button {
+	background: #25A6E1;
+	filter: progid: DXImageTransform.Microsoft.gradient( startColorstr='#25A6E1',
+		endColorstr='#188BC0', GradientType=0);
+	padding: 3px 5px;
+	color: #fff;
+	font-family: 'Helvetica Neue', sans-serif;
+	font-size: 12px;
+	border-radius: 2px;
+	-moz-border-radius: 2px;
+	-webkit-border-radius: 4px;
+	border: 1px solid #1A87B9
+}
+
+.red-button {
+	background: #CD5C5C;
+	padding: 3px 5px;
+	color: #fff;
+	font-family: 'Helvetica Neue', sans-serif;
+	font-size: 12px;
+	border-radius: 2px;
+	-moz-border-radius: 2px;
+	-webkit-border-radius: 4px;
+	border: 1px solid #CD5C5C
+}
+
+table {
+	font-family: "Helvetica Neue", Helvetica, sans-serif;
+	width: 50%;
+}
+
+caption {
+	text-align: left;
+	color: silver;
+	font-weight: bold;
+	text-transform: uppercase;
+	padding: 5px;
+}
+
+th {
+	background: SteelBlue;
+	color: white;
+}
+
+tbody tr:nth-child(even) {
+	background: WhiteSmoke;
+}
+
+tbody tr td:nth-child(2) {
+	text-align: center;
+}
+
+tbody tr td:nth-child(3), tbody tr td:nth-child(4) {
+	text-align: center;
+	font-family: monospace;
+}
+
+tfoot {
+	background: SeaGreen;
+	color: white;
+	text-align: right;
+}
+
+tfoot tr th:last-child {
+	font-family: monospace;
+}
+
+td, th {
+	border: 1px solid gray;
+	width: 25%;
+	text-align: left;
+	padding: 5px 10px;
+}
+</style>
+<head>
+<body ng-app="EmployeePortal" ng-controller="EmployeeController">
+	<h1>Customer Mart</h1>
+	<form ng-submit="submitEmployee()">
+		<table>
+
+			<tr>
+				<th colspan="2">Add/Edit Employee</th>
+			</tr>
+			<tr>
+				<td>Employee Name</td>
+				<td><input type="text" ng-model="employeeForm.employeeName" /></td>
+			</tr>
+			<tr>
+				<td>Email</td>
+				<td><input type="text" ng-model="employeeForm.email" /></td>
+			</tr>
+			<tr>
+				<td>Performance Rating</td>
+				<td><input type="text" ng-model="employeeForm.rating" /></td>
+			</tr>
+			<tr>
+				<td>Department</td>
+				<td><input type="text" ng-model="employeeForm.department" /></td>
+			</tr>
+			<tr>
+				<td colspan="2"><input type="submit" value="Submit"
+					class="blue-button" /></td>
+			</tr>
+		</table>
+	</form>
+	<table>
+		<tr>
+
+			<th>Employee Name</th>
+			<th>Email</th>
+			<th>Performance Rating</th>
+			<th>Department</th>
+			<th>Changes</th>
+
+		</tr>
+
+		<tr ng-repeat="employee in employees">
+
+			<td>{{ employee.employeeName }}</td>
+			<td>{{ employee.email }}</td>
+
+			<td><a ng-click="editEmployee(employee)" class="blue-button">Edit</a>
+				| <a ng-click="deleteEmployee(employee)" class="red-button">Delete</a></td>
+		</tr>
+
+	</table>
+</body>
+</html>
